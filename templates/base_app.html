@@ -1,0 +1,29 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}NutriAI{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+{% block head %}{% endblock %}</head><body data-page="{{ page }}">
+<div class="ambient a1"></div><div class="ambient a2"></div><div class="noise"></div>
+<div class="shell">
+<aside class="sidebar" id="sidebar">
+<a class="brand" href="/dashboard"><span class="brandmark"><i class="fa-solid fa-bolt"></i></span><span>Nutri<span>AI</span></span></a>
+<nav class="nav">
+<div class="nav-kicker">Pilotage</div>
+<a class="nav-link {% if page=='today' %}active{% endif %}" href="/dashboard"><i class="fa-solid fa-house"></i><span>Aujourd’hui</span></a>
+<a class="nav-link {% if page=='meals' %}active{% endif %}" href="/repas"><i class="fa-solid fa-utensils"></i><span>Repas</span></a>
+<a class="nav-link {% if page=='progress' %}active{% endif %}" href="/progression"><i class="fa-solid fa-chart-line"></i><span>Progression</span></a>
+<a class="nav-link {% if page=='coach' %}active{% endif %}" href="/coach"><i class="fa-solid fa-sparkles"></i><span>Coach IA</span></a>
+<div class="nav-kicker">Compte</div>
+<a class="nav-link {% if page=='goals' %}active{% endif %}" href="/objectifs"><i class="fa-solid fa-bullseye"></i><span>Objectifs</span></a>
+<a class="nav-link {% if page=='profile' %}active{% endif %}" href="/profil"><i class="fa-solid fa-user"></i><span>Profil & paramètres</span></a>
+</nav>
+<div class="sidebar-foot"><div class="mini-profile"><div class="avatar" id="avatar">N</div><div><strong id="sidebarName">NutriAI</strong><small id="sidebarGoal">Profil nutritionnel</small></div></div><button class="ghost-icon" onclick="Nutri.logout()" title="Déconnexion"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></div>
+</aside>
+<main class="main"><header class="topbar"><button class="mobile-menu" onclick="Nutri.toggleMenu()"><i class="fa-solid fa-bars"></i></button><div><div class="eyebrow" id="dateLabel">Performance quotidienne</div><h1>{% block h1 %}NutriAI{% endblock %}</h1></div><div class="top-actions"><div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="globalSearch" placeholder="Rechercher dans NutriAI" aria-label="Rechercher"></div><div class="streak-pill"><i class="fa-solid fa-fire"></i><strong id="streakTop">0</strong><span>jours</span></div><a class="icon-btn" href="/profil" title="Paramètres"><i class="fa-solid fa-gear"></i></a></div></header>
+{% block content %}{% endblock %}</main></div>
+<nav class="bottom-nav"><a class="{% if page=='today' %}active{% endif %}" href="/dashboard"><i class="fa-solid fa-house"></i><span>Aujourd’hui</span></a><a class="{% if page=='meals' %}active{% endif %}" href="/repas"><i class="fa-solid fa-utensils"></i><span>Repas</span></a><a class="{% if page=='progress' %}active{% endif %}" href="/progression"><i class="fa-solid fa-chart-line"></i><span>Stats</span></a><a class="{% if page=='coach' %}active{% endif %}" href="/coach"><i class="fa-solid fa-sparkles"></i><span>Coach</span></a></nav>
+<div class="toast-stack" id="toasts"></div><div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script><script src="{{ url_for('static', filename='js/app.js') }}"></script>{% block scripts %}{% endblock %}</body></html>

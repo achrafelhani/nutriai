@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>NutriAI — Mon Profil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #1a2e1a; color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .container { width: 100%; max-width: 500px; }
+    .header { text-align: center; margin-bottom: 40px; }
+    .header .logo { font-size: 18px; font-weight: 600; color: #4ade80; margin-bottom: 16px; }
+    .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .header p { font-size: 14px; color: rgba(255,255,255,0.5); }
+    .step { display: none; }
+    .step.active { display: block; }
+    .step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 32px; }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.3s; }
+    .step-dot.active { background: #1D9E75; }
+    .step-dot.done { background: #4ade80; }
+    .step-title { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .step-subtitle { text-align: center; font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 32px; }
+    .wheel-container { position: relative; height: 200px; overflow: hidden; margin: 0 auto 32px; width: 200px; }
+    .wheel-fade-top { position: absolute; top: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to bottom, #1a2e1a, transparent); z-index: 2; pointer-events: none; }
+    .wheel-fade-bot { position: absolute; bottom: 0; left: 0; right: 0; height: 70px; background: linear-gradient(to top, #1a2e1a, transparent); z-index: 2; pointer-events: none; }
+    .wheel-selector { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); height: 48px; border-top: 2px solid #1D9E75; border-bottom: 2px solid #1D9E75; z-index: 1; pointer-events: none; border-radius: 4px; }
+    .wheel { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
+    .wheel::-webkit-scrollbar { display: none; }
+    .wheel-item { height: 48px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; scroll-snap-align: center; color: rgba(255,255,255,0.3); transition: color 0.2s, font-size 0.2s; cursor: pointer; }
+    .wheel-item.selected { color: white; font-size: 28px; }
+    .wheel-value { text-align: center; font-size: 48px; font-weight: 700; color: #4ade80; margin-bottom: 8px; }
+    .wheel-unit { text-align: center; font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 24px; }
+    .goals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+    .goal-card { background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .goal-card:hover { border-color: rgba(29,158,117,0.5); background: rgba(29,158,117,0.1); }
+    .goal-card.selected { border-color: #1D9E75; background: rgba(29,158,117,0.2); }
+    .goal-icon { font-size: 32px; margin-bottom: 10px; }
+    .goal-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .goal-desc { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .btn-next { width: 100%; padding: 14px; background: #1D9E75; border: none; color: white; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .btn-next:hover { background: #0F6E56; }
+    .btn-next:disabled { background: rgba(255,255,255,0.1); cursor: not-allowed; }
+    .btn-back { width: 100%; padding: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); border-radius: 12px; font-size: 14px; cursor: pointer; margin-top: 10px; }
+    .btn-back:hover { border-color: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🥦 NutriAI</div>
+    <h1>Configure ton profil</h1>
+    <p>Quelques infos pour personnaliser ton suivi</p>
+  </div>
+
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot0"></div>
+    <div class="step-dot" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <div class="step active" id="step0">
+    <div class="step-title">Quel âge as-tu ?</div>
+    <div class="step-subtitle">Pour calculer tes besoins caloriques</div>
+    <div class="wheel-value" id="ageVal">25</div>
+    <div class="wheel-unit">ans</div>
+    <div class="wheel-container">
+      <div class="wheel-fade-top"></div>
+      <div class="wheel-fade-bot"></div>
+      <div class="wheel-selector"></div>
+      <div class="wheel" id="ageWheel"></div>
+    </div>
+    <button class="btn-next" onclick="nextStep()">Continuer →</button>
+  </div>
+
+  <div class="step" id="step1">
+    <div class="step-title">Quel est ton poids ?</div>
+    <div class="step-subtitle">En kilogrammes</div>
+    <div class="wheel-value" id="poidsVal">70</div>
+    <div class="wheel-unit">kg</div>
+    <div class="wheel-container">
+      <div class="wheel-fade-top"></div>
+      <div class="wheel-fade-bot"></div>
+      <div class="wheel-selector"></div>
+      <div class="wheel" id="poidsWheel"></div>
+    </div>
+    <button class="btn-next" onclick="nextStep()">Continuer →</button>
+    <button class="btn-back" onclick="prevStep()">← Retour</button>
+  </div>
+
+  <div class="step" id="step2">
+    <div class="step-title">Quelle est ta taille ?</div>
+    <div class="step-subtitle">En centimètres</div>
+    <div class="wheel-value" id="tailleVal">175</div>
+    <div class="wheel-unit">cm</div>
+    <div class="wheel-container">
+      <div class="wheel-fade-top"></div>
+      <div class="wheel-fade-bot"></div>
+      <div class="wheel-selector"></div>
+      <div class="wheel" id="tailleWheel"></div>
+    </div>
+    <button class="btn-next" onclick="nextStep()">Continuer →</button>
+    <button class="btn-back" onclick="prevStep()">← Retour</button>
+  </div>
+
+  <div class="step" id="step3">
+    <div class="step-title">Quel est ton objectif ?</div>
+    <div class="step-subtitle">On va adapter tes macros</div>
+    <div class="goals-grid">
+      <div class="goal-card" onclick="selectGoal('perte')" id="goal-perte">
+        <div class="goal-icon">⚡</div>
+        <div class="goal-title">Perte de poids</div>
+        <div class="goal-desc">Déficit calorique contrôlé</div>
+      </div>
+      <div class="goal-card" onclick="selectGoal('muscle')" id="goal-muscle">
+        <div class="goal-icon">💪</div>
+        <div class="goal-title">Prise de muscle</div>
+        <div class="goal-desc">Surplus + protéines élevées</div>
+      </div>
+      <div class="goal-card" onclick="selectGoal('maintien')" id="goal-maintien">
+        <div class="goal-icon">⚖️</div>
+        <div class="goal-title">Maintien</div>
+        <div class="goal-desc">Garder son poids actuel</div>
+      </div>
+      <div class="goal-card" onclick="selectGoal('sante')" id="goal-sante">
+        <div class="goal-icon">🥗</div>
+        <div class="goal-title">Manger sain</div>
+        <div class="goal-desc">Équilibre et bien-être</div>
+      </div>
+    </div>
+    <button class="btn-next" id="btnFinish" onclick="saveProfile()" disabled>Commencer mon suivi 🚀</button>
+    <button class="btn-back" onclick="prevStep()">← Retour</button>
+  </div>
+
+</div>
+
+<script>
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '/login';
+
+let currentStep = 0;
+let selectedGoal = null;
+let age = 25, poids = 70, taille = 175;
+
+function buildWheel(id, min, max, defaultVal, onChange) {
+  const wheel = document.getElementById(id);
+
+  for (let i = 0; i < 2; i++) {
+    const spacer = document.createElement('div');
+    spacer.style.height = '76px';
+    wheel.appendChild(spacer);
+  }
+
+  for (let i = min; i <= max; i++) {
+    const item = document.createElement('div');
+    item.className = 'wheel-item';
+    item.textContent = i;
+    item.dataset.val = i;
+    wheel.appendChild(item);
+  }
+
+  for (let i = 0; i < 2; i++) {
+    const spacer = document.createElement('div');
+    spacer.style.height = '76px';
+    wheel.appendChild(spacer);
+  }
+
+  let timeout;
+  wheel.addEventListener('scroll', () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      const itemHeight = 48;
+      const index = Math.round(wheel.scrollTop / itemHeight);
+      const val = min + index;
+      onChange(val);
+      wheel.querySelectorAll('.wheel-item').forEach((el, i) => {
+        el.classList.toggle('selected', i === index);
+      });
+    }, 50);
+  });
+
+  const startIndex = defaultVal - min;
+  setTimeout(() => {
+    wheel.scrollTop = startIndex * 48;
+    wheel.querySelectorAll('.wheel-item')[startIndex]?.classList.add('selected');
+  }, 100);
+}
+
+buildWheel('ageWheel', 10, 80, 25, val => {
+  age = val;
+  document.getElementById('ageVal').textContent = val;
+});
+
+buildWheel('poidsWheel', 30, 200, 70, val => {
+  poids = val;
+  document.getElementById('poidsVal').textContent = val;
+});
+
+buildWheel('tailleWheel', 130, 220, 175, val => {
+  taille = val;
+  document.getElementById('tailleVal').textContent = val;
+});
+
+function nextStep() {
+  document.getElementById('step' + currentStep).classList.remove('active');
+  document.getElementById('dot' + currentStep).classList.remove('active');
+  document.getElementById('dot' + currentStep).classList.add('done');
+  currentStep++;
+  document.getElementById('step' + currentStep).classList.add('active');
+  document.getElementById('dot' + currentStep).classList.add('active');
+}
+
+function prevStep() {
+  document.getElementById('step' + currentStep).classList.remove('active');
+  document.getElementById('dot' + currentStep).classList.remove('active');
+  currentStep--;
+  document.getElementById('step' + currentStep).classList.add('active');
+  document.getElementById('dot' + currentStep).classList.remove('done');
+  document.getElementById('dot' + currentStep).classList.add('active');
+}
+
+function selectGoal(goal) {
+  selectedGoal = goal;
+  document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('goal-' + goal).classList.add('selected');
+  document.getElementById('btnFinish').disabled = false;
+}
+
+async function saveProfile() {
+  const btn = document.getElementById('btnFinish');
+  btn.disabled = true;
+  btn.textContent = 'Sauvegarde...';
+  try {
+    const res = await fetch('/auth/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ age, poids, taille, objectif: selectedGoal })
+    });
+    window.location.href = '/dashboard';
+  } catch(e) {
+    window.location.href = '/dashboard';
+  }
+}
+</script>
+</body>
+</html>

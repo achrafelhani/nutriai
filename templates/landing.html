@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriAI — Performance Nutrition Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:#22c55e;
+      --green2:#4ade80;
+      --amber:#f59e0b;
+      --blue:#3b82f6;
+      --text:#f0faf2;
+      --text2:#7a9e84;
+      --border:rgba(34,197,94,0.12);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{
+      font-family:'Inter',sans-serif;
+      color:var(--text);
+      overflow-x:hidden;
+      background:#060d08;
+    }
+
+    #bgCanvas{
+      position:fixed;top:0;left:0;
+      width:100%;height:100%;
+      z-index:0;pointer-events:none;
+    }
+
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:200;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:16px 60px;
+      background:rgba(6,13,8,0.6);
+      backdrop-filter:blur(28px);
+      border-bottom:1px solid rgba(34,197,94,0.08);
+    }
+    .logo{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;letter-spacing:-1px;}
+    .logo em{font-style:normal;color:var(--green);}
+    .nav-c{display:flex;gap:32px;}
+    .nav-c a{font-size:13px;color:var(--text2);text-decoration:none;transition:color 0.2s;}
+    .nav-c a:hover{color:var(--text);}
+    .nav-r{display:flex;gap:10px;}
+    .btn-o{padding:8px 18px;border:1px solid rgba(34,197,94,0.2);border-radius:8px;background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+    .btn-o:hover{border-color:var(--green);color:var(--green);}
+    .btn-p{padding:8px 18px;border:none;border-radius:8px;background:var(--green);color:#000;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:all 0.2s;box-shadow:0 0 24px rgba(34,197,94,0.3);}
+    .btn-p:hover{background:var(--green2);box-shadow:0 0 40px rgba(34,197,94,0.5);transform:translateY(-1px);}
+
+    .hero{
+      position:relative;z-index:1;
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      align-items:center;gap:40px;
+      padding:120px 60px 80px;
+      max-width:1300px;margin:0 auto;
+    }
+
+    .hero-left{opacity:0;transform:translateY(28px);animation:fadeUp 0.9s ease forwards 0.2s;}
+    @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+
+    .hero-badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 14px;
+      border:1px solid rgba(34,197,94,0.25);
+      border-radius:100px;
+      background:rgba(34,197,94,0.07);
+      font-size:11px;font-weight:600;color:var(--green);
+      margin-bottom:24px;letter-spacing:0.08em;text-transform:uppercase;
+    }
+    .bdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 2s ease-in-out infinite;}
+    @keyframes pdot{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+    h1{
+      font-family:'Space Grotesk',sans-serif;
+      font-size:clamp(42px,5vw,70px);
+      font-weight:800;line-height:1.02;
+      letter-spacing:-2.5px;margin-bottom:20px;
+    }
+    h1 em{font-style:normal;color:var(--green);}
+    .hero-sub{font-size:17px;color:var(--text2);line-height:1.7;margin-bottom:36px;max-width:460px;}
+
+    .hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px;}
+    .bh{padding:14px 28px;border-radius:10px;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;}
+    .bh-p{background:var(--green);color:#000;box-shadow:0 0 40px rgba(34,197,94,0.35);}
+    .bh-p:hover{background:var(--green2);box-shadow:0 0 65px rgba(34,197,94,0.55);transform:translateY(-3px);}
+    .bh-s{background:rgba(255,255,255,0.05);color:var(--text);border:1px solid rgba(255,255,255,0.1);}
+    .bh-s:hover{background:rgba(255,255,255,0.09);transform:translateY(-3px);}
+
+    .hero-stats{display:flex;gap:32px;}
+    .hs-val{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;line-height:1;margin-bottom:4px;}
+    .hs-lbl{font-size:12px;color:var(--text2);}
+
+    .hero-right{
+      position:relative;display:flex;align-items:center;justify-content:center;
+      height:600px;
+      opacity:0;animation:fadeUp 0.9s ease forwards 0.5s;
+    }
+
+    .fc{
+      position:absolute;
+      background:rgba(8,18,10,0.88);
+      border:1px solid rgba(34,197,94,0.18);
+      border-radius:14px;padding:14px 18px;
+      backdrop-filter:blur(20px);
+      box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 1px rgba(34,197,94,0.05);
+      z-index:10;
+    }
+    .fc-1{top:20px;left:-10px;animation:fl1 4s ease-in-out infinite;}
+    .fc-2{bottom:50px;left:0;animation:fl2 5s ease-in-out infinite;}
+    .fc-3{top:60px;right:-10px;animation:fl3 4.5s ease-in-out infinite;}
+    .fc-4{bottom:30px;right:0;animation:fl1 5.5s ease-in-out infinite reverse;}
+    @keyframes fl1{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+    @keyframes fl2{0%,100%{transform:translateY(0)}50%{transform:translateY(12px)}}
+    @keyframes fl3{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
+    .fc-lbl{font-size:10px;color:var(--text2);letter-spacing:0.06em;margin-bottom:6px;text-transform:uppercase;}
+    .fc-val{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;}
+    .fc-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:8px;overflow:hidden;}
+    .fc-fill{height:100%;border-radius:2px;animation:barGrow 2s ease-out forwards;}
+    @keyframes barGrow{from{width:0}to{width:var(--w)}}
+    .fc-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+    .fc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+    #robotWrap{
+      position:relative;width:240px;height:440px;flex-shrink:0;
+      filter:drop-shadow(0 0 50px rgba(34,197,94,0.25)) drop-shadow(0 0 100px rgba(34,197,94,0.1));
+    }
+    #robotSvg{width:100%;height:100%;}
+
+    .sring{
+      position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      border-radius:50%;
+      border:1px solid rgba(34,197,94,0.1);
+      animation:sexpand 4s ease-out infinite;
+      pointer-events:none;
+    }
+    .sring2{animation-delay:1.4s;}
+    .sring3{animation-delay:2.8s;}
+    @keyframes sexpand{
+      0%{width:160px;height:160px;opacity:0.6;}
+      100%{width:520px;height:520px;opacity:0;}
+    }
+
+    .section{position:relative;z-index:1;}
+    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(34,197,94,0.1),transparent);}
+    .section-tag{display:inline-block;padding:5px 14px;border:1px solid rgba(34,197,94,0.2);border-radius:100px;background:rgba(34,197,94,0.06);font-size:11px;font-weight:600;color:var(--green);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;}
+    .section-h{font-family:'Space Grotesk',sans-serif;font-size:clamp(30px,4vw,50px);font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-bottom:14px;}
+    .section-p{font-size:16px;color:var(--text2);line-height:1.7;max-width:500px;}
+
+    .features{padding:100px 60px;max-width:1300px;margin:0 auto;}
+    .feat-header{text-align:center;margin-bottom:60px;}
+    .feat-header .section-p{margin:0 auto;}
+    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+    .feat-card{
+      background:rgba(8,18,10,0.5);
+      border:1px solid rgba(34,197,94,0.1);
+      border-radius:20px;padding:30px;
+      position:relative;overflow:hidden;
+      transition:all 0.35s;
+    }
+    .feat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(34,197,94,0.35),transparent);opacity:0;transition:opacity 0.35s;}
+    .feat-card:hover{border-color:rgba(34,197,94,0.28);background:rgba(8,18,10,0.85);transform:translateY(-6px);}
+    .feat-card:hover::after{opacity:1;}
+    .fi{width:46px;height:46px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:18px;}
+    .ft{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;margin-bottom:10px;letter-spacing:-0.3px;}
+    .fd{font-size:14px;color:var(--text2);line-height:1.65;}
+    .fp{display:inline-block;margin-top:14px;padding:4px 10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);border-radius:6px;font-size:11px;color:var(--green);font-weight:600;}
+    .feat-large{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center;}
+
+    .perf{padding:80px 60px;background:rgba(6,13,8,0.5);border-top:1px solid rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.08);}
+    .perf-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+    .pbar{margin-bottom:16px;}
+    .pbar-top{display:flex;justify-content:space-between;margin-bottom:7px;}
+    .pbar-n{font-size:13px;font-weight:500;}
+    .pbar-v{font-size:13px;color:var(--text2);}
+    .pbar-bg{height:7px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;}
+    .pbar-f{height:100%;border-radius:4px;animation:barGrow 1.8s ease-out forwards;}
+
+    .stats{padding:60px;border-bottom:1px solid rgba(34,197,94,0.08);}
+    .stats-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:40px;text-align:center;}
+    .sn{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:800;color:var(--green);line-height:1;margin-bottom:8px;letter-spacing:-2px;}
+    .sl{font-size:13px;color:var(--text2);}
+
+    .cta{padding:120px 60px;text-align:center;position:relative;}
+    .cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(34,197,94,0.08),transparent 70%);pointer-events:none;}
+    .cta-inner{position:relative;z-index:1;}
+    .cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:40px;}
+
+    footer{position:relative;z-index:1;padding:24px 60px;border-top:1px solid rgba(34,197,94,0.08);display:flex;justify-content:space-between;font-size:13px;color:var(--text2);}
+
+    .reveal{opacity:0;transform:translateY(28px);transition:all 0.8s cubic-bezier(.4,0,.2,1);}
+    .revealed{opacity:1;transform:translateY(0);}
+  </style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<nav>
+  <div class="logo"><em>Nutri</em>AI</div>
+  <div class="nav-c">
+    <a href="#features">Fonctionnalités</a>
+    <a href="#perf">Performance</a>
+    <a href="#cta">Commencer</a>
+  </div>
+  <div class="nav-r">
+    <a href="/login" class="btn-o">Se connecter</a>
+    <a href="/register" class="btn-p">S'inscrire</a>
+  </div>
+</nav>
+
+<section class="hero section">
+  <div class="hero-left">
+    <div class="hero-badge"><div class="bdot"></div>IA Nutrition · Performance · Progression</div>
+    <h1>Nutrition<br><em>intelligente.</em><br>Corps réel.</h1>
+    <p class="hero-sub">Ton coach IA nutritionnel. Analyse tes repas en photo ou texte, calcule tes macros selon ta morphologie et progresse vers ton objectif physique.</p>
+    <div class="hero-btns">
+      <a href="/register" class="bh bh-p">Commencer gratuitement →</a>
+      <a href="#features" class="bh bh-s">Découvrir</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="hs-val">2</div><div class="hs-lbl">Modes d'analyse : photo et texte</div></div>
+      <div><div class="hs-val">30 j</div><div class="hs-lbl">Historique et adhérence</div></div>
+      <div><div class="hs-val">IA</div><div class="hs-lbl">Analyse photo par IA</div></div>
+    </div>
+  </div>
+
+  <div class="hero-right" id="heroRight">
+    <div class="sring"></div>
+    <div class="sring sring2"></div>
+    <div class="sring sring3"></div>
+
+    <div class="fc fc-1">
+      <div class="fc-lbl">Calories du jour</div>
+      <div class="fc-val" style="color:var(--green)">1 847 kcal</div>
+      <div class="fc-bar"><div class="fc-fill" style="background:var(--green);--w:84%"></div></div>
+    </div>
+    <div class="fc fc-2">
+      <div class="fc-lbl">Macros</div>
+      <div class="fc-row"><div class="fc-dot" style="background:var(--green)"></div><span style="font-size:12px">Prot. 142g</span></div>
+      <div class="fc-row"><div class="fc-dot" style="background:var(--amber)"></div><span style="font-size:12px">Gluc. 198g</span></div>
+      <div class="fc-row"><div class="fc-dot" style="background:var(--blue)"></div><span style="font-size:12px">Lip. 58g</span></div>
+    </div>
+    <div class="fc fc-3">
+      <div class="fc-lbl">Adhérence 30 jours</div>
+      <div class="fc-val" style="color:var(--amber)">87 %</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">Exemple d'affichage</div>
+    </div>
+    <div class="fc fc-4">
+      <div class="fc-lbl">Streak</div>
+      <div class="fc-val" style="color:var(--green2)">🔥 12 jours</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">Continue comme ça !</div>
+    </div>
+
+    <div id="robotWrap">
+      <svg id="robotSvg" viewBox="0 0 240 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0f2814"/>
+            <stop offset="100%" stop-color="#060d08"/>
+          </linearGradient>
+          <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(34,197,94,0.3)"/>
+            <stop offset="100%" stop-color="rgba(34,197,94,0)"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <ellipse cx="120" cy="424" rx="55" ry="10" fill="rgba(34,197,94,0.12)"/>
+
+        <!-- LEGS -->
+        <rect x="76" y="332" width="34" height="88" rx="14" fill="url(#bodyGrad)" stroke="#22c55e" stroke-width="1.5"/>
+        <rect x="130" y="332" width="34" height="88" rx="14" fill="url(#bodyGrad)" stroke="#22c55e" stroke-width="1.5"/>
+        <rect x="80" y="390" width="26" height="16" rx="6" fill="#060d08" stroke="rgba(34,197,94,0.35)" stroke-width="1"/>
+        <rect x="134" y="390" width="26" height="16" rx="6" fill="#060d08" stroke="rgba(34,197,94,0.35)" stroke-width="1"/>
+        <rect x="68" y="408" width="48" height="22" rx="9" fill="#060d08" stroke="#22c55e" stroke-width="1.5"/>
+        <rect x="124" y="408" width="48" height="22" rx="9" fill="#060d08" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="92" y1="412" x2="108" y2="412" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+        <line x1="148" y1="412" x2="164" y2="412" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+
+        <!-- HIP -->
+        <rect x="68" y="324" width="104" height="16" rx="8" fill="#060d08" stroke="rgba(34,197,94,0.3)" stroke-width="1.2"/>
+
+        <!-- TORSO -->
+        <rect x="54" y="174" width="132" height="158" rx="22" fill="url(#bodyGrad)" stroke="#22c55e" stroke-width="1.8"/>
+        <!-- Torso chest panel -->
+        <rect x="70" y="192" width="100" height="58" rx="12" fill="#060d08" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <!-- Energy core -->
+        <circle cx="120" cy="221" r="20" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.3)" stroke-width="1" filter="url(#glow)"/>
+        <circle cx="120" cy="221" r="13" fill="rgba(34,197,94,0.12)" stroke="#22c55e" stroke-width="1.5"/>
+        <circle cx="120" cy="221" r="6" fill="#22c55e" id="corePulse" filter="url(#glow)"/>
+        <!-- Vents -->
+        <rect x="59" y="208" width="9" height="3" rx="1.5" fill="rgba(34,197,94,0.5)"/>
+        <rect x="59" y="215" width="9" height="3" rx="1.5" fill="rgba(34,197,94,0.35)"/>
+        <rect x="59" y="222" width="9" height="3" rx="1.5" fill="rgba(34,197,94,0.2)"/>
+        <rect x="172" y="208" width="9" height="3" rx="1.5" fill="rgba(34,197,94,0.5)"/>
+        <rect x="172" y="215" width="9" height="3" rx="1.5" fill="rgba(34,197,94,0.35)"/>
+        <rect x="172" y="222" width="9" height="3" rx="1.5" fill="rgba(34,197,94,0.2)"/>
+        <!-- Lower panels -->
+        <rect x="70" y="262" width="44" height="54" rx="9" fill="#060d08" stroke="rgba(34,197,94,0.18)" stroke-width="1"/>
+        <rect x="126" y="262" width="44" height="54" rx="9" fill="#060d08" stroke="rgba(34,197,94,0.18)" stroke-width="1"/>
+        <!-- Macro bars in panels -->
+        <rect x="76" y="272" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.05)"/>
+        <rect x="76" y="272" width="24" height="3" rx="1.5" fill="#22c55e"/>
+        <rect x="76" y="281" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.05)"/>
+        <rect x="76" y="281" width="18" height="3" rx="1.5" fill="#f59e0b"/>
+        <rect x="76" y="290" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.05)"/>
+        <rect x="76" y="290" width="26" height="3" rx="1.5" fill="#3b82f6"/>
+        <rect x="132" y="272" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.05)"/>
+        <rect x="132" y="272" width="28" height="3" rx="1.5" fill="#22c55e"/>
+        <rect x="132" y="281" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.05)"/>
+        <rect x="132" y="281" width="20" height="3" rx="1.5" fill="#f59e0b"/>
+        <rect x="132" y="290" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.05)"/>
+        <rect x="132" y="290" width="14" height="3" rx="1.5" fill="#3b82f6"/>
+
+        <!-- ARMS -->
+        <rect x="16" y="180" width="36" height="112" rx="15" fill="url(#bodyGrad)" stroke="#22c55e" stroke-width="1.5"/>
+        <rect x="188" y="180" width="36" height="112" rx="15" fill="url(#bodyGrad)" stroke="#22c55e" stroke-width="1.5"/>
+        <rect x="20" y="256" width="28" height="28" rx="9" fill="#060d08" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+        <rect x="192" y="256" width="28" height="28" rx="9" fill="#060d08" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+        <rect x="12" y="282" width="44" height="24" rx="10" fill="url(#bodyGrad)" stroke="#22c55e" stroke-width="1.5"/>
+        <rect x="184" y="282" width="44" height="24" rx="10" fill="url(#bodyGrad)" stroke="#22c55e" stroke-width="1.5"/>
+        <line x1="34" y1="200" x2="34" y2="248" stroke="rgba(34,197,94,0.15)" stroke-width="1"/>
+        <line x1="206" y1="200" x2="206" y2="248" stroke="rgba(34,197,94,0.15)" stroke-width="1"/>
+
+        <!-- NECK -->
+        <rect x="102" y="154" width="36" height="28" rx="9" fill="url(#bodyGrad)" stroke="rgba(34,197,94,0.3)" stroke-width="1.2"/>
+        <line x1="109" y1="160" x2="109" y2="176" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <line x1="120" y1="158" x2="120" y2="176" stroke="rgba(34,197,94,0.25)" stroke-width="1"/>
+        <line x1="131" y1="160" x2="131" y2="176" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+
+        <!-- HEAD -->
+        <rect x="58" y="68" width="124" height="94" rx="22" fill="url(#bodyGrad)" stroke="#22c55e" stroke-width="2" id="robotHead"/>
+        <!-- Antenna -->
+        <rect x="114" y="50" width="12" height="24" rx="6" fill="url(#bodyGrad)" stroke="rgba(34,197,94,0.4)" stroke-width="1.2"/>
+        <circle cx="120" cy="46" r="8" fill="rgba(34,197,94,0.12)" stroke="#22c55e" stroke-width="1.5" filter="url(#glow)"/>
+        <circle cx="120" cy="46" r="4" fill="#22c55e" id="antennaPulse" filter="url(#glow)"/>
+        <!-- Side ears -->
+        <rect x="42" y="90" width="19" height="32" rx="8" fill="url(#bodyGrad)" stroke="rgba(34,197,94,0.3)" stroke-width="1.2"/>
+        <rect x="179" y="90" width="19" height="32" rx="8" fill="url(#bodyGrad)" stroke="rgba(34,197,94,0.3)" stroke-width="1.2"/>
+        <circle cx="51" cy="106" r="4" fill="rgba(34,197,94,0.2)" stroke="rgba(34,197,94,0.4)" stroke-width="1"/>
+        <circle cx="189" cy="106" r="4" fill="rgba(34,197,94,0.2)" stroke="rgba(34,197,94,0.4)" stroke-width="1"/>
+
+        <!-- FACE -->
+        <rect x="68" y="80" width="104" height="70" rx="15" fill="#040b05" stroke="rgba(34,197,94,0.12)" stroke-width="1"/>
+
+        <!-- EYES -->
+        <ellipse cx="94" cy="109" rx="18" ry="15" fill="#030906" stroke="rgba(34,197,94,0.18)" stroke-width="1"/>
+        <ellipse id="eyeL" cx="94" cy="109" rx="11" ry="11" fill="rgba(34,197,94,0.08)"/>
+        <ellipse id="pupilL" cx="94" cy="109" rx="8" ry="8" fill="#22c55e" opacity="0.85" filter="url(#glow)"/>
+        <ellipse id="pupilLI" cx="94" cy="109" rx="5" ry="5" fill="#4ade80"/>
+        <ellipse id="pupilLC" cx="94" cy="109" rx="2.5" ry="2.5" fill="white" opacity="0.9"/>
+
+        <ellipse cx="146" cy="109" rx="18" ry="15" fill="#030906" stroke="rgba(34,197,94,0.18)" stroke-width="1"/>
+        <ellipse id="eyeR" cx="146" cy="109" rx="11" ry="11" fill="rgba(34,197,94,0.08)"/>
+        <ellipse id="pupilR" cx="146" cy="109" rx="8" ry="8" fill="#22c55e" opacity="0.85" filter="url(#glow)"/>
+        <ellipse id="pupilRI" cx="146" cy="109" rx="5" ry="5" fill="#4ade80"/>
+        <ellipse id="pupilRC" cx="146" cy="109" rx="2.5" ry="2.5" fill="white" opacity="0.9"/>
+
+        <!-- MOUTH -->
+        <rect x="84" y="133" width="72" height="7" rx="3.5" fill="#030906" stroke="rgba(34,197,94,0.12)" stroke-width="1"/>
+        <rect x="86" y="135" width="48" height="3" rx="1.5" fill="#22c55e" id="mouthBar" filter="url(#glow)"/>
+
+        <!-- SCAN LINE -->
+        <rect x="68" y="80" width="104" height="1.5" rx="1" fill="rgba(34,197,94,0.5)" id="scanLine"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="features section" id="features">
+  <div class="feat-header reveal">
+    <div class="section-tag">Fonctionnalités</div>
+    <div class="section-h">Tout ce qu'il te faut<br>pour performer</div>
+    <div class="section-p">Des outils IA avancés pour analyser, suivre et optimiser ta nutrition au quotidien.</div>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-card feat-large reveal">
+      <div>
+        <div class="fi">📸</div>
+        <div class="ft">Analyse photo IA instantanée</div>
+        <div class="fd">Prends une photo de ton assiette. NutriAI identifie chaque aliment et calcule calories + macros en quelques secondes. Les valeurs sont des estimations, que tu peux corriger ensuite.</div>
+        <span class="fp">Analyse photo par IA</span>
+      </div>
+      <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.1);border-radius:14px;padding:18px">
+        <div style="font-size:11px;color:var(--text2);letter-spacing:0.08em;margin-bottom:12px">ANALYSE DÉTECTÉE</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:13px"><span>🍗 Poulet grillé 200g</span><span style="color:var(--green)">330 kcal</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:13px"><span>🍚 Couscous 150g</span><span style="color:var(--amber)">172 kcal</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:13px"><span>🥗 Légumes variés</span><span style="color:var(--blue)">48 kcal</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);border-radius:8px;font-size:13px;font-weight:600"><span>Total</span><span style="color:var(--green)">550 kcal</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="feat-card reveal">
+      <div class="fi">✍️</div>
+      <div class="ft">Description en texte libre</div>
+      <div class="fd">Décris ton repas en une phrase. NutriAI estime la portion, les calories et les macros.</div>
+      <span class="fp">Langage naturel</span>
+    </div>
+    <div class="feat-card reveal">
+      <div class="fi" style="background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.15)">📒</div>
+      <div class="ft">Journal alimentaire</div>
+      <div class="fd">Retrouve tes repas jour par jour. Modifie ou supprime une entrée à tout moment.</div>
+      <span class="fp" style="color:var(--amber);background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.15)">Par date</span>
+    </div>
+    <div class="feat-card reveal">
+      <div class="fi" style="background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.15)">📊</div>
+      <div class="ft">Objectifs Harris-Benedict</div>
+      <div class="fd">Repères estimés selon ton âge, ton poids, ta taille et ton objectif, pour une activité modérée.</div>
+      <span class="fp" style="color:var(--blue);background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.15)">Estimation</span>
+    </div>
+    <div class="feat-card reveal">
+      <div class="fi">📈</div>
+      <div class="ft">Suivi sur 30 jours</div>
+      <div class="fd">Calories et protéines par jour, jours renseignés, moyennes et série en cours.</div>
+      <span class="fp">Analytics</span>
+    </div>
+    <div class="feat-card reveal">
+      <div class="fi">💬</div>
+      <div class="ft">Coach contextuel</div>
+      <div class="fd">Pose une question : le coach répond à partir de ton profil et des repas enregistrés aujourd'hui.</div>
+      <span class="fp">Basé sur tes données</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="perf section" id="perf">
+  <div class="perf-inner">
+    <div class="reveal">
+      <div class="section-tag">Performance</div>
+      <div class="section-h" style="margin-bottom:16px">Conçu pour<br>les vrais objectifs</div>
+      <div class="section-p" style="margin-bottom:40px">NutriAI estime tes repères quotidiens à partir de ton profil et de ton objectif. Ce sont des ordres de grandeur, pas un avis médical.</div>
+      <div class="pbar"><div class="pbar-top"><span class="pbar-n">Protéines</span><span class="pbar-v">142g / 150g</span></div><div class="pbar-bg"><div class="pbar-f" style="background:var(--green);--w:94%"></div></div></div>
+      <div class="pbar"><div class="pbar-top"><span class="pbar-n">Glucides</span><span class="pbar-v">198g / 250g</span></div><div class="pbar-bg"><div class="pbar-f" style="background:var(--amber);--w:79%"></div></div></div>
+      <div class="pbar"><div class="pbar-top"><span class="pbar-n">Lipides</span><span class="pbar-v">58g / 70g</span></div><div class="pbar-bg"><div class="pbar-f" style="background:var(--blue);--w:83%"></div></div></div>
+      <div class="pbar"><div class="pbar-top"><span class="pbar-n">Calories</span><span class="pbar-v">1847 / 2200</span></div><div class="pbar-bg"><div class="pbar-f" style="background:rgba(255,255,255,0.35);--w:84%"></div></div></div>
+    </div>
+    <div class="reveal" style="background:rgba(8,18,10,0.6);border:1px solid rgba(34,197,94,0.1);border-radius:20px;padding:32px">
+      <div style="font-size:11px;color:var(--text2);letter-spacing:0.1em;margin-bottom:20px">SUIVI 30 JOURS — EXEMPLE D'AFFICHAGE</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:var(--text2)">Jours renseignés</span><span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700">26 / 30</span></div>
+        <div style="height:1px;background:rgba(34,197,94,0.1)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:var(--text2)">Calories moyennes</span><span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--green)">2 140 kcal</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:var(--text2)">Protéines moyennes</span><span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--amber)">138 g</span></div>
+        <div style="height:1px;background:rgba(34,197,94,0.1)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:600">Adhérence</span><span style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:800;color:var(--green)">87 %</span></div>
+        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.12);border-radius:10px;padding:14px">
+          <div style="font-size:12px;color:var(--green);font-weight:600;margin-bottom:4px">Coach :</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.5">Tu es à 138 g de protéines en moyenne pour un repère de 150 g. Ajoute une source de protéines au petit-déjeuner.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats section">
+  <div class="stats-inner">
+    <div class="reveal"><div class="sn">2</div><div class="sl">Modes d'analyse</div></div>
+    <div class="reveal"><div class="sn">30 j</div><div class="sl">Historique analysé</div></div>
+    <div class="reveal"><div class="sn">JWT</div><div class="sl">Comptes protégés</div></div>
+    <div class="reveal"><div class="sn">IA</div><div class="sl">Claude Vision intégré</div></div>
+  </div>
+</section>
+
+<section class="cta section" id="cta">
+  <div class="cta-glow"></div>
+  <div class="cta-inner reveal">
+    <div class="section-tag">Prêt ?</div>
+    <div class="section-h">Ta transformation<br>commence maintenant</div>
+    <div class="section-p" style="margin:0 auto">Projet personnel de démonstration. Les valeurs nutritionnelles sont des estimations.</div>
+    <div class="cta-btns">
+      <a href="/register" class="bh bh-p">Créer mon compte →</a>
+      <a href="/login" class="bh bh-s">Se connecter</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 NutriAI — Performance Nutrition Intelligence</span>
+  <span>Projet de démonstration · pas un avis médical</span>
+</footer>
+
+<script>
+// ═══════════════ BG CANVAS ═══════════════
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, t = 0;
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+let mx = 0.5, my = 0.5;
+document.addEventListener('mousemove', e => { mx = e.clientX/W; my = e.clientY/H; });
+
+// Particles
+const pts = Array.from({length:60}, () => ({
+  x: Math.random()*1920, y: Math.random()*1080,
+  r: Math.random()*1.8+0.2,
+  vx: (Math.random()-0.5)*0.1, vy: -Math.random()*0.2-0.03,
+  col: Math.random()>0.5 ? '34,197,94' : Math.random()>0.5 ? '245,158,11' : '59,130,246',
+  a: Math.random()*0.18+0.03
+}));
+
+// Floating orbs
+const orbs = [
+  {bx:0.1, by:0.2, r:380, col:'34,197,94', a:0.09},
+  {bx:0.85, by:0.8, r:300, col:'245,158,11', a:0.06},
+  {bx:0.45, by:1.0, r:250, col:'59,130,246', a:0.05},
+  {bx:0.7, by:0.1, r:200, col:'34,197,94', a:0.04},
+];
+
+// Flowing lines
+const lines = Array.from({length:8}, (_, i) => ({
+  y: (i / 8) * 1080,
+  phase: Math.random() * Math.PI * 2,
+  amp: 40 + Math.random() * 60,
+  freq: 0.003 + Math.random() * 0.004,
+  speed: 0.3 + Math.random() * 0.5,
+  col: Math.random() > 0.5 ? '34,197,94' : '59,130,246',
+  a: 0.04 + Math.random() * 0.06
+}));
+
+function drawBg() {
+  t += 0.008;
+  ctx.clearRect(0,0,W,H);
+
+  // Rich gradient background
+  const bgGrd = ctx.createRadialGradient(W*0.5, H*0.4, 0, W*0.5, H*0.4, Math.max(W,H)*0.8);
+  bgGrd.addColorStop(0, '#0a1a0c');
+  bgGrd.addColorStop(0.4, '#060d08');
+  bgGrd.addColorStop(1, '#030608');
+  ctx.fillStyle = bgGrd;
+  ctx.fillRect(0,0,W,H);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(34,197,94,0.018)';
+  ctx.lineWidth = 0.5;
+  const gs = 72;
+  for(let x=0;x<W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // Dynamic orbs with mouse parallax
+  orbs.forEach((o, i) => {
+    const px = o.bx + (mx-0.5)*0.06*(i%2?1:-1) + Math.sin(t*0.3+i)*0.02;
+    const py = o.by + (my-0.5)*0.06*(i%2?-1:1) + Math.cos(t*0.4+i)*0.02;
+    const grd = ctx.createRadialGradient(px*W, py*H, 0, px*W, py*H, o.r);
+    grd.addColorStop(0, `rgba(${o.col},${o.a})`);
+    grd.addColorStop(0.5, `rgba(${o.col},${o.a*0.3})`);
+    grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0,0,W,H);
+  });
+
+  // Flowing energy lines
+  lines.forEach(l => {
+    ctx.beginPath();
+    const yBase = (l.y / 1080) * H;
+    for(let x = 0; x <= W; x += 4) {
+      const y = yBase + Math.sin(x * l.freq + t * l.speed + l.phase) * l.amp;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `rgba(${l.col},${l.a})`;
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  });
+
+  // Particles
+  pts.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if(p.y < -5) { p.y = H+5; p.x = Math.random()*W; }
+    if(p.x < 0) p.x = W;
+    if(p.x > W) p.x = 0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(${p.col},${p.a})`;
+    ctx.fill();
+  });
+
+  // Ambient light flicker
+  const flicker = 0.02 + Math.sin(t*2.3)*0.008;
+  const ambGrd = ctx.createRadialGradient(W*(0.3+mx*0.4), H*(0.2+my*0.4), 0, W*0.5, H*0.5, Math.max(W,H)*0.7);
+  ambGrd.addColorStop(0, `rgba(34,197,94,${flicker})`);
+  ambGrd.addColorStop(1, 'transparent');
+  ctx.fillStyle = ambGrd;
+  ctx.fillRect(0,0,W,H);
+
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// ═══════════════ ROBOT EYES ═══════════════
+const robotWrap = document.getElementById('robotWrap');
+const eyesData = [
+  {base:{cx:94,cy:109}, els:['pupilL','pupilLI','pupilLC']},
+  {base:{cx:146,cy:109}, els:['pupilR','pupilRI','pupilRC']},
+];
+
+document.addEventListener('mousemove', e => {
+  if(!robotWrap) return;
+  const rect = robotWrap.getBoundingClientRect();
+  const rcx = rect.left + rect.width/2;
+  const rcy = rect.top + rect.height * 0.27;
+  const dx = e.clientX - rcx;
+  const dy = e.clientY - rcy;
+  const dist = Math.sqrt(dx*dx+dy*dy) || 1;
+  const norm = Math.min(dist, 250)/250;
+  const ox = (dx/dist)*5*norm;
+  const oy = (dy/dist)*5*norm;
+
+  eyesData.forEach(eye => {
+    eye.els.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if(!el) return;
+      const f = 1 - i*0.18;
+      el.setAttribute('cx', eye.base.cx + ox*f);
+      el.setAttribute('cy', eye.base.cy + oy*f);
+    });
+  });
+});
+
+// ═══════════════ ROBOT ANIMATION ═══════════════
+let rt = 0;
+const robotSvg = document.getElementById('robotSvg');
+const scanLine = document.getElementById('scanLine');
+const corePulse = document.getElementById('corePulse');
+const antennaPulse = document.getElementById('antennaPulse');
+const mouthBar = document.getElementById('mouthBar');
+
+function animRobot() {
+  rt += 0.016;
+  if(robotSvg) robotSvg.style.transform = `translateY(${Math.sin(rt*0.7)*7}px)`;
+  if(scanLine) {
+    const sy = 80 + ((Math.sin(rt*1.8)+1)/2)*70;
+    scanLine.setAttribute('y', sy);
+    scanLine.setAttribute('opacity', 0.25 + Math.abs(Math.sin(rt*1.8))*0.45);
+  }
+  if(corePulse) {
+    const cr = 5 + Math.sin(rt*2.5)*2;
+    corePulse.setAttribute('r', cr);
+  }
+  if(antennaPulse) antennaPulse.style.opacity = 0.4 + Math.abs(Math.sin(rt*2))*0.6;
+  if(mouthBar) {
+    const mw = 18 + Math.abs(Math.sin(rt*1.2))*44;
+    mouthBar.setAttribute('width', mw);
+  }
+  requestAnimationFrame(animRobot);
+}
+animRobot();
+
+// ═══════════════ SCROLL REVEAL ═══════════════
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('revealed'); });
+}, {threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,511 @@
+{% extends 'base_app.html' %}
+
+{% block title %}
+Coach IA · NutriAI
+{% endblock %}
+
+{% block h1 %}
+Coach IA
+{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-2">
+
+    <section class="card coach-card">
+
+        <div class="coach-orb">
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+
+        <div class="kicker" style="color:#92a897">
+            CONTEXTE RÉEL
+        </div>
+
+        <div class="title">
+            Ton coach nutrition
+        </div>
+
+        <p class="coach-copy">
+            Le coach répond à partir de ton profil et de tes repas enregistrés aujourd’hui.
+        </p>
+
+        <div
+            class="metric-grid"
+            style="grid-template-columns:1fr 1fr;margin-top:16px"
+        >
+
+            <div
+                class="metric"
+                style="
+                    background:rgba(255,255,255,.08);
+                    border-color:rgba(255,255,255,.09)
+                "
+            >
+                <small style="color:#aebbad">
+                    Aujourd’hui
+                </small>
+
+                <strong id="ccal">
+                    —
+                </strong>
+            </div>
+
+            <div
+                class="metric"
+                style="
+                    background:rgba(255,255,255,.08);
+                    border-color:rgba(255,255,255,.09)
+                "
+            >
+                <small style="color:#aebbad">
+                    Protéines
+                </small>
+
+                <strong id="cprot">
+                    —
+                </strong>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="card chat">
+
+        <div
+            class="chat-log"
+            id="chatLog"
+        >
+
+            <div class="bubble ai">
+                Bonjour. Dis-moi ce que tu as mangé et je peux l’estimer.
+            </div>
+
+        </div>
+
+
+        <div class="suggestions">
+
+            <button
+                class="chip"
+                data-q="J'ai mangé une grande assiette de couscous au poulet"
+            >
+                Estimer un couscous
+            </button>
+
+            <button
+                class="chip"
+                data-q="Combien de protéines me reste-t-il ?"
+            >
+                Protéines restantes
+            </button>
+
+            <button
+                class="chip"
+                data-q="Analyse ma journée"
+            >
+                Analyser ma journée
+            </button>
+
+        </div>
+
+
+        <div class="meal-composer">
+
+            <input
+                class="input"
+                id="coachInput"
+                placeholder="Ex : J'ai mangé 200 g de poulet avec du riz..."
+            >
+
+            <button
+                class="btn btn-primary"
+                id="coachSend"
+            >
+                <i class="fa-solid fa-arrow-up"></i>
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+let lastEstimate = null;
+
+
+/* =====================================================
+   LOAD CONTEXT
+===================================================== */
+
+async function loadCtx() {
+
+    try {
+
+        const day =
+            await Nutri.api(
+                '/meals/today'
+            );
+
+
+        ccal.textContent =
+            Math.round(
+                day.totals.calories || 0
+            ) + ' kcal';
+
+
+        cprot.textContent =
+            Math.round(
+                day.totals.protein || 0
+            ) + ' g';
+
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =====================================================
+   SEND TO COACH
+===================================================== */
+
+async function send(question) {
+
+    question = question.trim();
+
+    if (!question) return;
+
+
+    chatLog.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div class="bubble user">
+            ${escapeHtml(question)}
+        </div>
+        `
+    );
+
+
+    coachInput.value = '';
+
+
+    const typingId =
+        'typing-' + Date.now();
+
+
+    chatLog.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div
+            class="bubble ai"
+            id="${typingId}"
+        >
+            NutriAI réfléchit...
+        </div>
+        `
+    );
+
+
+    chatLog.scrollTop =
+        chatLog.scrollHeight;
+
+
+    try {
+
+        const response =
+            await Nutri.api(
+                '/ai/coach',
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body:
+                        JSON.stringify({
+                            question
+                        })
+                }
+            );
+
+
+        document
+            .getElementById(
+                typingId
+            )
+            ?.remove();
+
+
+        let extraButton = '';
+
+
+        if (
+            response.estimate
+            &&
+            response.estimate.can_add
+        ) {
+
+            lastEstimate =
+                response.estimate;
+
+
+            extraButton = `
+
+                <div style="margin-top:14px">
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="addEstimateToDay()"
+                    >
+                        + Ajouter cette estimation à ma journée
+                    </button>
+
+                </div>
+
+            `;
+
+        }
+
+
+        chatLog.insertAdjacentHTML(
+            'beforeend',
+            `
+            <div class="bubble ai">
+
+                ${formatText(response.answer)}
+
+                ${extraButton}
+
+            </div>
+            `
+        );
+
+
+    } catch (error) {
+
+        document
+            .getElementById(
+                typingId
+            )
+            ?.remove();
+
+
+        chatLog.insertAdjacentHTML(
+            'beforeend',
+            `
+            <div class="bubble ai">
+                ${escapeHtml(
+                    error.message
+                    || 'Le coach IA est indisponible.'
+                )}
+            </div>
+            `
+        );
+
+    }
+
+
+    chatLog.scrollTop =
+        chatLog.scrollHeight;
+
+}
+
+
+/* =====================================================
+   ADD ESTIMATE TO DAY
+===================================================== */
+
+async function addEstimateToDay() {
+
+    if (!lastEstimate) {
+
+        Nutri.toast(
+            'Aucune estimation disponible.'
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        await Nutri.api(
+            '/meals/meal',
+            {
+                method:
+                    'POST',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body:
+                    JSON.stringify({
+
+                        description:
+                            lastEstimate.description,
+
+                        calories:
+                            lastEstimate.calories,
+
+                        protein:
+                            lastEstimate.protein,
+
+                        carbs:
+                            lastEstimate.carbs,
+
+                        fat:
+                            lastEstimate.fat
+
+                    })
+            }
+        );
+
+
+        Nutri.toast(
+            'Repas ajouté à ta journée.'
+        );
+
+
+        chatLog.insertAdjacentHTML(
+            'beforeend',
+            `
+            <div class="bubble ai">
+
+                ✅ Repas ajouté à ta journée.
+
+                <br><br>
+
+                Le dashboard va maintenant prendre en compte
+                cette estimation.
+
+            </div>
+            `
+        );
+
+
+        lastEstimate =
+            null;
+
+
+        await loadCtx();
+
+
+    } catch (error) {
+
+        Nutri.toast(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement(
+            'div'
+        );
+
+    div.textContent =
+        text ?? '';
+
+    return div.innerHTML;
+
+}
+
+
+function formatText(text) {
+
+    return escapeHtml(
+        text
+    )
+    .replace(
+        /\*\*(.*?)\*\*/g,
+        '<strong>$1</strong>'
+    )
+    .replace(
+        /\n/g,
+        '<br>'
+    );
+
+}
+
+
+/* =====================================================
+   EVENTS
+===================================================== */
+
+coachSend.onclick =
+    () => send(
+        coachInput.value
+    );
+
+
+coachInput.onkeydown =
+    event => {
+
+        if (
+            event.key ===
+            'Enter'
+        ) {
+
+            event.preventDefault();
+
+            send(
+                coachInput.value
+            );
+
+        }
+
+    };
+
+
+document
+    .querySelectorAll(
+        '.chip'
+    )
+    .forEach(
+        chip => {
+
+            chip.onclick =
+                () =>
+                    send(
+                        chip.dataset.q
+                    );
+
+        }
+    );
+
+
+document.addEventListener(
+    'DOMContentLoaded',
+    loadCtx
+);
+
+</script>
+
+{% endblock %}

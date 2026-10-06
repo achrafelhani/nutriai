@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriAI — Créer un compte</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{--green:#16a34a;--green2:#22c55e;--text:#0f1f12;--text2:#3d5c45;--text3:#7a9882;--text4:#b0c8b8;--bg:#f4f7f4;--s1:#ffffff;--s2:#f8fbf8;--s3:#f0f5f0;--border:rgba(15,31,18,0.08);--red:#dc2626;--amber:#d97706;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{height:100%;-webkit-font-smoothing:antialiased;}
+    body{font-family:'Inter',sans-serif;color:var(--text);background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+
+    .container{width:100%;max-width:480px;}
+    .logo-wrap{display:flex;align-items:center;gap:10px;margin-bottom:32px;justify-content:center;}
+    .logo-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#16a34a,#22c55e);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(22,163,74,0.3);}
+    .logo-mark i{color:white;font-size:14px;}
+    .logo-text{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;}
+    .logo-text em{font-style:normal;color:var(--green);}
+
+    .card{background:var(--s1);border-radius:20px;padding:36px;box-shadow:0 8px 40px rgba(0,0,0,0.06),0 2px 8px rgba(0,0,0,0.04);}
+    .card-eyebrow{font-size:10px;font-weight:700;color:var(--green);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;}
+    .card-title{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.8px;margin-bottom:6px;color:var(--text);}
+    .card-sub{font-size:13px;color:var(--text3);margin-bottom:28px;line-height:1.5;}
+
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:0.02em;}
+    .input-wrap{position:relative;}
+    .form-input{width:100%;padding:11px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:all 0.2s;}
+    .form-input::placeholder{color:var(--text4);}
+    .form-input:focus{background:var(--s1);border-color:rgba(22,163,74,0.4);box-shadow:0 0 0 3px rgba(22,163,74,0.07);}
+    .form-input.input-error{border-color:rgba(220,38,38,0.4);}
+    .form-input.input-ok{border-color:rgba(22,163,74,0.4);}
+    .form-input.has-icon{padding-right:42px;}
+    .input-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);cursor:pointer;font-size:14px;transition:color 0.2s;background:none;border:none;}
+    .input-icon:hover{color:var(--green);}
+
+    .pwd-strength{margin-top:8px;}
+    .pwd-bars{display:flex;gap:4px;margin-bottom:5px;}
+    .pwd-bar{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background 0.3s;}
+    .pwd-label{font-size:11px;color:var(--text3);font-weight:500;}
+
+    .match-msg{font-size:11px;margin-top:5px;font-weight:500;}
+
+    .form-error{display:none;padding:10px 13px;background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.18);border-radius:9px;font-size:13px;color:var(--red);margin-bottom:14px;}
+    .form-error.show{display:block;}
+
+    .btn-submit{width:100%;padding:12px;border-radius:10px;border:none;background:var(--green);color:white;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.25s;font-family:'Inter',sans-serif;box-shadow:0 4px 12px rgba(22,163,74,0.22);margin-top:6px;}
+    .btn-submit:hover{background:var(--green2);transform:translateY(-1px);box-shadow:0 8px 20px rgba(22,163,74,0.3);}
+    .btn-submit:disabled{background:var(--s3);color:var(--text4);cursor:not-allowed;transform:none;box-shadow:none;}
+
+    .form-footer{text-align:center;margin-top:18px;font-size:13px;color:var(--text3);}
+    .form-link{color:var(--green);font-weight:600;text-decoration:none;}
+    .form-link:hover{color:var(--green2);}
+
+    .requirements{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+    .req{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text4);font-weight:500;transition:color 0.2s;}
+    .req.met{color:var(--green);}
+    .req i{font-size:9px;}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="logo-wrap">
+    <div class="logo-mark"><i class="fa-solid fa-leaf"></i></div>
+    <div class="logo-text"><em>Nutri</em>AI</div>
+  </div>
+  <div class="card">
+    <div class="card-eyebrow">Nouveau compte</div>
+    <div class="card-title">Rejoins NutriAI.</div>
+    <div class="card-sub">Crée ton compte gratuitement et commence ton suivi nutritionnel dès aujourd'hui.</div>
+    <div class="form-error" id="formError"></div>
+    <div class="form-group">
+      <label class="form-label">Nom d'utilisateur</label>
+      <input class="form-input" type="text" id="username" placeholder="ex. achraf.benali" oninput="checkAll()"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mot de passe</label>
+      <div class="input-wrap">
+        <input class="form-input has-icon" type="password" id="password" placeholder="••••••••" oninput="checkStrength();checkAll()"/>
+        <button class="input-icon" type="button" onmousedown="showPwd('password')" onmouseup="hidePwd('password')" onmouseleave="hidePwd('password')">
+          <i class="fa-regular fa-eye"></i>
+        </button>
+      </div>
+      <div class="pwd-strength">
+        <div class="pwd-bars">
+          <div class="pwd-bar" id="b1"></div>
+          <div class="pwd-bar" id="b2"></div>
+          <div class="pwd-bar" id="b3"></div>
+          <div class="pwd-bar" id="b4"></div>
+          <div class="pwd-bar" id="b5"></div>
+        </div>
+        <div class="pwd-label" id="pwdLabel">Tape ton mot de passe</div>
+      </div>
+      <div class="requirements">
+        <div class="req" id="req1"><i class="fa-solid fa-circle-check"></i> 8+ caractères</div>
+        <div class="req" id="req2"><i class="fa-solid fa-circle-check"></i> Majuscule</div>
+        <div class="req" id="req3"><i class="fa-solid fa-circle-check"></i> Chiffre</div>
+        <div class="req" id="req4"><i class="fa-solid fa-circle-check"></i> ≠ username</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirmer le mot de passe</label>
+      <div class="input-wrap">
+        <input class="form-input has-icon" type="password" id="confirm" placeholder="••••••••" oninput="checkMatch();checkAll()"/>
+        <button class="input-icon" type="button" onmousedown="showPwd('confirm')" onmouseup="hidePwd('confirm')" onmouseleave="hidePwd('confirm')">
+          <i class="fa-regular fa-eye"></i>
+        </button>
+      </div>
+      <div class="match-msg" id="matchMsg"></div>
+    </div>
+    <button class="btn-submit" id="submitBtn" onclick="register()" disabled>Créer mon compte</button>
+    <div class="form-footer">Déjà un compte ? <a href="/login" class="form-link">Se connecter</a></div>
+  </div>
+</div>
+<script>
+let strengthOk=false,matchOk=false;
+function showPwd(id){document.getElementById(id).type='text';}
+function hidePwd(id){document.getElementById(id).type='password';}
+
+function checkStrength(){
+  const pwd=document.getElementById('password').value;
+  const username=document.getElementById('username').value;
+  const bars=[document.getElementById('b1'),document.getElementById('b2'),document.getElementById('b3'),document.getElementById('b4'),document.getElementById('b5')];
+  const label=document.getElementById('pwdLabel');
+  const reqs=[document.getElementById('req1'),document.getElementById('req2'),document.getElementById('req3'),document.getElementById('req4')];
+
+  const r1=pwd.length>=8,r2=/[A-Z]/.test(pwd),r3=/[0-9]/.test(pwd),r4=pwd!==username||!pwd;
+  reqs[0].classList.toggle('met',r1);reqs[1].classList.toggle('met',r2);
+  reqs[2].classList.toggle('met',r3);reqs[3].classList.toggle('met',r4&&pwd.length>0);
+
+  if(pwd===username&&pwd.length>0){
+    bars.forEach((b,i)=>b.style.background=i<2?'#dc2626':'var(--border)');
+    label.textContent='❌ Identique au username';label.style.color='#dc2626';
+    strengthOk=false;return;
+  }
+  let score=0;
+  if(pwd.length>=6)score++;if(pwd.length>=10)score++;
+  if(r2)score++;if(r3)score++;if(/[^A-Za-z0-9]/.test(pwd))score++;
+  const configs=[
+    {n:0,c:'var(--border)',t:'',tc:'var(--text4)'},
+    {n:1,c:'#dc2626',t:'Très faible',tc:'#dc2626'},
+    {n:2,c:'#f97316',t:'Faible',tc:'#f97316'},
+    {n:3,c:var_amber,t:'Moyen',tc:var_amber},
+    {n:4,c:'#16a34a',t:'Fort',tc:'#16a34a'},
+    {n:5,c:'#15803d',t:'Très fort ✓',tc:'#15803d'},
+  ];
+  const cfg=pwd.length===0?configs[0]:configs[Math.max(1,score)];
+  bars.forEach((b,i)=>b.style.background=i<cfg.n?cfg.c:'var(--border)');
+  label.textContent=cfg.t;label.style.color=cfg.tc;
+  strengthOk=score>=3&&pwd!==username;
+}
+
+function checkMatch(){
+  const pwd=document.getElementById('password').value;
+  const conf=document.getElementById('confirm').value;
+  const msg=document.getElementById('matchMsg');
+  const inp=document.getElementById('confirm');
+  if(!conf){msg.textContent='';matchOk=false;inp.classList.remove('input-ok','input-error');return;}
+  if(pwd===conf){msg.textContent='✓ Les mots de passe correspondent';msg.style.color='#16a34a';inp.classList.add('input-ok');inp.classList.remove('input-error');matchOk=true;}
+  else{msg.textContent='✗ Les mots de passe ne correspondent pas';msg.style.color='#dc2626';inp.classList.add('input-error');inp.classList.remove('input-ok');matchOk=false;}
+}
+
+const var_amber='#d97706';
+function checkAll(){
+  const u=document.getElementById('username').value;
+  const p=document.getElementById('password').value;
+  document.getElementById('submitBtn').disabled=!(u.length>0&&strengthOk&&matchOk&&p!==u);
+}
+
+async function register(){
+  const username=document.getElementById('username').value.trim();
+  const password=document.getElementById('password').value;
+  const error=document.getElementById('formError');
+  error.classList.remove('show');
+  try{
+    const r=await fetch('/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+    const d=await r.json();
+    if(r.ok){localStorage.setItem('token',d.token);localStorage.setItem('username',username);window.location.href='/setup';}
+    else{error.textContent=d.error||'Erreur lors de l\'inscription.';error.classList.add('show');}
+  }catch(e){error.textContent='Erreur de connexion.';error.classList.add('show');}
+}
+</script>
+</body>
+</html>
